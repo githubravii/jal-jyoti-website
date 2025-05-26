@@ -104,7 +104,7 @@ export default function HomePage() {
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3"
             >
-              Get Free Quote
+              Log In
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-3">
               Emergency Service
