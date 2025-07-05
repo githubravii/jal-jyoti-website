@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 
-import { signInUsingGoogle } from "./actions/auth.action.js";
+import { signInUsingGoogle, signInUsingCredentials } from "./actions/auth.action.js";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -15,7 +15,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       authorize: async (credentials) => {
         const { email, password } = credentials;
-        // const user = await
+        
+        // Use the signInUsingCredentials function from actions
+        const user = await signInUsingCredentials({
+          email: email,
+          password: password,
+        });
+        
+        if (user) {
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        }
+        
+        return null;
       },
     }),
   ],
@@ -25,7 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     signIn: async ({ user, account, profile }) => {
-      if (account.provider === "google") {
+      if (account?.provider === "google") {
         const getUserId = await signInUsingGoogle({
           user,
           profile,
@@ -34,7 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.id = getUserId?.userId;
           return true;
         } else return false;
-      } else if (account.provider === "credentials") {
+      } else if (account?.provider === "credentials") {
         return true;
       }
       return false;
