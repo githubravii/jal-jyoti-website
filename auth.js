@@ -1,47 +1,51 @@
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import Credentials from "next-auth/providers/credentials";
+import NextAuth from "next-auth"
+import Google from "next-auth/providers/google"
+import Credentials from "next-auth/providers/credentials"
+import axios from "axios"
+import { signInUsingGoogle } from "./actions/auth.action"
 
-import { signInUsingGoogle } from "./actions/auth.action.js";
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Google,
     Credentials({
-      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
         const { email, password } = credentials;
-        // const user = await
-      },
-    }),
+        if (!email || !password) {
+          throw new Error("Email and password are required");
+        }
+        const user = await signInUsingCredentials(email, password);
+        if (user) {
+          return { ...user };
+        } else throw new Error("Invalid credentials");
+      }
+    })
   ],
   pages: {
-    signIn: "/login",
-    signOut: "/",
+    signIn: '/login',
+    signOut: '/',
   },
   callbacks: {
     signIn: async ({ user, account, profile }) => {
       if (account.provider === "google") {
-        const getUserId = await signInUsingGoogle({
+        const userId = await signInUsingGoogle({
           user,
-          profile,
-        });
-        if (getUserId) {
-          user.id = getUserId?.userId;
+          profile
+        })
+        if (userId) {
+          user.id = userId?.userId;
           return true;
-        } else return false;
-      } else if (account.provider === "credentials") {
-        return true;
-      }
+        } else {
+          return false;
+        }
+      } else if (account.provider === "credentials") return true;
       return false;
     },
     jwt: async ({ token, user }) => {
       if (user) {
-        console.log("user", user);
         token.id = user.id;
         token.email = user.email;
       }
@@ -53,6 +57,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.email = token.email;
       }
       return session;
-    },
-  },
-});
+    }
+  }
+})
