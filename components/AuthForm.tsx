@@ -1,5 +1,7 @@
 "use client";
 
+import { signInCreds } from "@/actions/auth.action";
+import GooglelogIn from "@/app/login/googlelogin";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,35 +10,36 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import GooglelogIn from "@/app/login/googlelogin";
 
 export const LoginForm = () => {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-    });
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    };
+    const [error, setError] = useState("");
 
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        // Simulate login process
-        setTimeout(() => {
+    const handleSubmit = async (formData: FormData) => {
+        setError("");
+        const email = formData.get('email') as string;
+        const password = formData.get('password') as string;
+        
+        if (!email || !password) {
+            setError("Email or password is missing");
+            return;
+        }
+        try {
+            setIsLoading(true);
+            const result = await signInCreds({ email, password });
+            if (result.error) {
+                setError(result.error);
+                return;
+            }
+            router.push('/dashboard');
+        } catch (error) {
+            setError("Something went wrong. Please try again.");
+        } finally {
             setIsLoading(false);
-            // For demo purposes, redirect to home page
-            router.push("/");
-        }, 1000);
+        }
     };
 
     return (
@@ -50,7 +53,12 @@ export const LoginForm = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form action={handleSubmit} className="space-y-4">
+                    {error && (
+                        <div className="text-red-500 text-sm mb-2" role="alert">
+                            {error}
+                        </div>
+                    )}
                     <div className="space-y-2">
                         <Label htmlFor="email">Email Address</Label>
                         <Input
@@ -58,8 +66,6 @@ export const LoginForm = () => {
                             name="email"
                             type="email"
                             placeholder="Enter your email"
-                            value={formData.email}
-                            onChange={handleInputChange}
                             required
                             className="w-full"
                         />
@@ -73,8 +79,6 @@ export const LoginForm = () => {
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Enter your password"
-                                value={formData.password}
-                                onChange={handleInputChange}
                                 required
                                 className="w-full pr-10"
                             />

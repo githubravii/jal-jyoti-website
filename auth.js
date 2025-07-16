@@ -2,7 +2,7 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 import axios from "axios"
-import { signInUsingGoogle } from "./actions/auth.action"
+import { signInUsingCredentials, signInUsingGoogle } from "./actions/auth.action"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -14,13 +14,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       authorize: async (credentials) => {
         const { email, password } = credentials;
+        console.log("credentials:", credentials);
         if (!email || !password) {
           throw new Error("Email and password are required");
         }
         const user = await signInUsingCredentials(email, password);
-        if (user) {
+        console.log("User from credentials4535453534:", user);
+        if (user && !user.error) {
           return { ...user };
-        } else throw new Error("Invalid credentials");
+        } else {
+          throw new Error(user?.error || "Invalid credentials");
+        }
       }
     })
   ],

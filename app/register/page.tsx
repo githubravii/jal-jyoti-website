@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { registerUser } from "@/actions/auth.action";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,12 +32,13 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: "",
+    // phone: "",
     password: "",
     confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState("");
   const router = useRouter();
 
   const validateForm = () => {
@@ -52,11 +54,11 @@ export default function RegisterPage() {
       newErrors.email = "Email is invalid";
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s-()]{10,}$/.test(formData.phone)) {
-      newErrors.phone = "Phone number is invalid";
-    }
+    // if (!formData.phone.trim()) {
+    //   newErrors.phone = "Phone number is required";
+    // } else if (!/^\+?[\d\s-()]{10,}$/.test(formData.phone)) {
+    //   newErrors.phone = "Phone number is invalid";
+    // }
 
     if (!formData.password) {
       newErrors.password = "Password is required";
@@ -80,13 +82,23 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
+    setServerError("");
 
-    // Simulate registration process
-    setTimeout(() => {
-      setIsLoading(false);
-      // For demo purposes, redirect to login page
+    try {
+      const { fullName, email, password } = formData;
+      const result = await registerUser({ fullName, email, password });
+      if (result.error) {
+        setServerError(result.error);
+        setIsLoading(false);
+        return;
+      }
+      console.log("Registration successful:", result);
+      // Registration successful, redirect to login
       router.push("/login");
-    }, 1000);
+    } catch (err) {
+      setServerError("Registration failed. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,6 +153,9 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {serverError && (
+                <div className="text-sm text-red-500 text-center">{serverError}</div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <div className="relative">
@@ -183,7 +198,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -201,7 +216,7 @@ export default function RegisterPage() {
                 {errors.phone && (
                   <p className="text-sm text-red-500">{errors.phone}</p>
                 )}
-              </div>
+              </div> */}
 
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
