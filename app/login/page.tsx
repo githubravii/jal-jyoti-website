@@ -56,18 +56,10 @@ export default function LoginPage() {
             href="/"
             className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
           ></Link>
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="bg-blue-600 p-3 rounded-lg">
-              <Droplets className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Jal Jyoti Enterprises
-              </h1>
-              <p className="text-sm text-blue-600">
-                Professional Plumbing Solutions
-              </p>
-            </div>
+          <div className="flex items-center justify-center mb-4">
+           
+              <img src="/brand-logo.png" alt="Logo" className="h-16 w-auto" />
+            
           </div>
         </div>
 
@@ -158,9 +150,6 @@ export default function LoginPage() {
                   <span className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
-                    Or continue with
-                  </span>
                 </div>
               </div>
 
